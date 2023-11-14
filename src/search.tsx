@@ -61,7 +61,11 @@ export default function Command() {
 
   // Sort each section's packages by srcname
   for (const section in packageSections) {
-    packageSections[section].sort((a, b) => a.srcname.localeCompare(b.srcname));
+    packageSections[section].sort((a, b) => {
+      const aName = a.visiblename || a.srcname;
+      const bName = b.visiblename || b.srcname;
+      return aName.localeCompare(bName);
+    });
   }
 
   return (
