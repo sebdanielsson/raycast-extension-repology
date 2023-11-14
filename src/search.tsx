@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { ActionPanel, Action, List, Toast, showToast } from "@raycast/api";
+import { ActionPanel, Action, Icon, List, Toast, showToast } from "@raycast/api";
 import { useFetch } from "@raycast/utils";
 import { PackageDetail } from "./PackageDetail";
 import { Package } from "./types";
@@ -89,7 +89,11 @@ export default function Command() {
                 accessories={[{ text: pkg.version }]}
                 actions={
                   <ActionPanel>
-                    <Action.Push title="Show Details" target={<PackageDetail pkg={pkg} />} />
+                    <Action.Push
+                      title="Show Details"
+                      icon={Icon.AppWindowSidebarRight}
+                      target={<PackageDetail pkg={pkg} />}
+                    />
                     <Action.CopyToClipboard content={pkg.visiblename || pkg.binname || pkg.srcname} />
                     <Action.OpenInBrowser
                       url={`https://repology.org/projects/?search=${
