@@ -4,7 +4,6 @@ import { useFetch } from "@raycast/utils";
 import { PackageDetail } from "./PackageDetail";
 import { Package } from "./types";
 
-// Define a type for your sections
 type PackageSections = {
   [key: string]: Package[];
 };
@@ -49,7 +48,7 @@ export default function Command() {
     return packages.filter((pkg) => selectedRepo === "" || pkg.repo === selectedRepo);
   }, [packages, selectedRepo]);
 
-  // Grouping and sorting filtered packages within each section
+  // Group packages by repository
   const packageSections = filteredPackages.reduce<PackageSections>((sections, pkg) => {
     const sectionKey = pkg.repo;
     if (!sections[sectionKey]) {
@@ -59,7 +58,7 @@ export default function Command() {
     return sections;
   }, {});
 
-  // Sort each section's packages by srcname
+  // Sort each section's packages by visiblename or srcname
   for (const section in packageSections) {
     packageSections[section].sort((a, b) => {
       const aName = a.visiblename || a.srcname;

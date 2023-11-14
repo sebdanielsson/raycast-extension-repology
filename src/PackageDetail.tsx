@@ -15,7 +15,7 @@ export function PackageDetail({ pkg }: { pkg: Package }) {
   const categories = pkg.categories && pkg.categories.length > 0 ? pkg.categories : null;
   const maintainers = pkg.maintainers && pkg.maintainers.length > 0 ? pkg.maintainers : null;
 
-  // Split licenses if they contain ' AND '
+  // Split licenses if they a string contain ' AND '
   const splitLicenses = licenses
     ? licenses.flatMap((license) => (license.includes(" AND ") ? license.split(" AND ") : license))
     : null;
