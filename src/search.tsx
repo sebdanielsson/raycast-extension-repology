@@ -109,7 +109,7 @@ export default function Command() {
           </List.Section>
         ))
       ) : (
-        <List.EmptyView title="No packages found" description="Try a different search query" />
+        <List.EmptyView title="No Results" />
       )}
     </List>
   );
