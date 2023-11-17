@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { ActionPanel, Action, Icon, List, Toast, showToast } from "@raycast/api";
 import { useFetch } from "@raycast/utils";
 import { PackageDetail } from "./PackageDetail";
@@ -11,23 +11,12 @@ type PackageSections = {
 export default function Command() {
   const [inputValue, setInputValue] = useState<string>("");
   const [selectedRepo, setSelectedRepo] = useState<string>("");
-  const [debouncedQuery, setDebouncedQuery] = useState<string>("");
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      if (inputValue.length >= 2) {
-        setDebouncedQuery(inputValue);
-      }
-    }, 500);
-
-    return () => clearTimeout(handler);
-  }, [inputValue]);
 
   const { data, isLoading, error } = useFetch<{ [key: string]: Package[] }>(
-    `https://repology.org/api/v1/project/${debouncedQuery}`,
+    `https://repology.org/api/v1/project/${inputValue}`,
     {
       keepPreviousData: true,
-      execute: debouncedQuery.length >= 2,
+      execute: inputValue.length >= 2,
     },
   );
 
@@ -43,20 +32,25 @@ export default function Command() {
     return Array.from(new Set(allRepos));
   }, [packages]);
 
+  // Sort repositories alphabetically
+  repos.sort((a, b) => a.localeCompare(b));
+
   // Filter packages based on the selected repository
   const filteredPackages = useMemo(() => {
     return packages.filter((pkg) => selectedRepo === "" || pkg.repo === selectedRepo);
   }, [packages, selectedRepo]);
 
   // Group packages by repository
-  const packageSections = filteredPackages.reduce<PackageSections>((sections, pkg) => {
-    const sectionKey = pkg.repo;
-    if (!sections[sectionKey]) {
-      sections[sectionKey] = [];
-    }
-    sections[sectionKey].push(pkg);
-    return sections;
-  }, {});
+  const packageSections = useMemo(() => {
+    return filteredPackages.reduce<PackageSections>((sections, pkg) => {
+      const sectionKey = pkg.repo;
+      if (!sections[sectionKey]) {
+        sections[sectionKey] = [];
+      }
+      sections[sectionKey].push(pkg);
+      return sections;
+    }, {});
+  }, [filteredPackages]);
 
   // Sort each section's packages by visiblename or srcname
   for (const section in packageSections) {
@@ -72,6 +66,7 @@ export default function Command() {
       isLoading={isLoading}
       onSearchTextChange={setInputValue}
       searchBarPlaceholder="Search for packages"
+      throttle={true}
       searchBarAccessory={
         <List.Dropdown tooltip="Select Repository" storeValue={true} onChange={setSelectedRepo}>
           <List.Dropdown.Item title="All Repositories" value="" />
@@ -81,7 +76,9 @@ export default function Command() {
         </List.Dropdown>
       }
     >
-      {Object.keys(packageSections).length > 0 ? (
+      {inputValue.length < 2 ? (
+        <List.EmptyView title="No Results" />
+      ) : (
         Object.entries(packageSections).map(([sectionTitle, packages]) => (
           <List.Section key={sectionTitle} title={sectionTitle}>
             {packages.map((pkg, index) => (
@@ -111,8 +108,6 @@ export default function Command() {
             ))}
           </List.Section>
         ))
-      ) : (
-        <List.EmptyView title="No Results" />
       )}
     </List>
   );
